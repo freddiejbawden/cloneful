@@ -67,7 +67,7 @@ function addToHistory() {
 
 
 $(document).ready(function() {
-
+  // Loading in pages
   $('#back').click(function() {
     h = sessionStorage.getItem("h");
     if (h != null) {
@@ -105,6 +105,8 @@ $(document).ready(function() {
     });
   } else if (page == "waiting_room") {
     $("#y").load("/static/js/waitingroomcontent.html");
+  } else if (page == "drawing") {
+    $('#y').load("/static/js/drawingcontent.html")
   } else {
     $('#y').load("/static/js/indexcontent.html", function() {
       $("#creategame").click(function() {

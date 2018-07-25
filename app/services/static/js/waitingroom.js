@@ -27,7 +27,17 @@ $(document).ready(function() {
     console.log(err);
   });
 });
+function updateGame(room_code) {
+  url = "http://127.0.0.1:5000/gamecontroller/" + room_code
 
+  fetch(url).then(function(response) {
+    response.json().then(function(data) {
+      console.log(data)
+    })
+  }).catch(function(err) {
+    console.log(err)
+  });
+}
 function startGameButton(room_code) {
   url = "http://127.0.0.1:5000/room/" + room_code
   fetch(url).then(function(response) {
@@ -38,12 +48,14 @@ function startGameButton(room_code) {
           button = document.createElement("div")
           button.setAttribute("id","startButton")
           button.setAttribute("class","startbutton")
+          button.innerHTML = "Start Game"
+          $('#host_info').append(button)
           $("#startButton").click(function() {
+              updateGame(room_code)
               addToHistory()
-              session.setItem("page","drawing")
+              sessionStorage.setItem("page","drawing")
               location.reload(true)
           });
-          $('#host_info').append(button)
         } else {
           span = document.createElement("span")
           span.setAttribute("class","wait_text")
@@ -56,7 +68,7 @@ function startGameButton(room_code) {
   });
 }
 
-function checkfornewplayers() {
+function checkforchange() {
   room_code = sessionStorage.getItem("id")
   url = "http://127.0.0.1:5000/player/" + room_code
 
@@ -85,9 +97,32 @@ function checkfornewplayers() {
             $("#players").append(li)
           });
         }
+        checkforstart(room_code)
       });
   }).catch(function(err) {
     console.log(err);
   });
 }
-var intervalId = window.setInterval(checkfornewplayers,2000);
+
+function checkforstart(room_code) {
+  url = "http://127.0.0.1:5000/room/" + room_code
+
+  fetch(url).then(function(response) {
+    response.json().then(function(data) {
+      console.log(data)
+      if (data["gameState"] === 1) {
+        //game has been started
+        addToHistory()
+        sessionStorage.setItem("page","drawing")
+        location.reload(true)
+      }
+    })
+  }).catch(function(err) {
+    console.log(err)
+  })
+
+
+
+}
+
+var intervalId = window.setInterval(checkforchange,2000);

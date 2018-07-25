@@ -119,13 +119,16 @@ def add_player_to_room(room_id):
 
 
 
-@app.route("/gamecontroller",methods=["PUT"])
-def change_gamestate():
-    room = str(request.json["room"])
+@app.route("/gamecontroller/<string:room_id>",methods=["GET"])
+def change_gamestate(room_id):
+    room = str(room_id)
     target_room = Room.query.get_or_404(room)
     current_gamestate = target_room.gameState
     if current_gamestate == 0:
         current_gamestate = 1
+    Room.query.filter_by(id=room).update(dict(id=current_gamestate))
+    db.session.commit()
+    return str(current_gamestate)
 
 
 

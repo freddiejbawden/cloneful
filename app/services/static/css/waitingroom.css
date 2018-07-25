@@ -1,0 +1,25 @@
+.room-code {
+  font-size: 30pt;
+  font-weight: bold;
+}
+.player-list {
+  list-style-type: none;
+}
+.player-list li {
+  width: 100pt;
+  padding-left: 10pt;
+  background-color: orange;
+}
+.startbutton {
+  padding: 10pt;
+  background-color: green;
+}
+.container {
+  background-color: #c0c0c0;
+  justify-content: center;
+  font-family: sans-serif;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

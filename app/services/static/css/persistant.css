@@ -1,0 +1,20 @@
+.logo {
+  font-size: 30pt;
+  padding-bottom: 40pt;
+}
+.container {
+  background-color: #c0c0c0;
+  justify-content: center;
+  font-family: sans-serif;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.back-arrow {
+  z-index: 2;
+  width: 15pt;
+}
+.y {
+  z-index: 1;
+}

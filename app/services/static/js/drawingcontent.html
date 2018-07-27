@@ -1,15 +1,57 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="static/js/drawing.js"></script>
+
 <style>
-#canvas {
-  border: 5px solid red;
-}
-#canvascopy {
-  border: 5px solid blue;
-}
+    #canvas {
+      border: 5px solid red;
+      background-color: white;
+    }
+    .drawing-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #c0c0c0;
+    }
+    .buttons {
+      display: flex;
+      width: 10%;
+    }
+    .timer {
+      width: 30%;
+      background-color: green;
+      height: 50px;
+      margin-top: 20px;
+    }
+    .clearbutton {
+      padding: 10pt;
+      min-width: 40pt;
+      text-align: center;
+      background-color: aqua;
+      margin-top: 10pt;
+    }
+    .submitbutton {
+      padding: 10pt;
+      text-align: center;
+      min-width: 40pt;
+      background-color: green;
+      margin-top: 10pt;
+    }
+    .prompt {
+      font-family: sans-serif;
+      margin-top: 10pt;
+      margin-bottom: 10pt;
+      font-size: 20pt;
+    }
 </style>
-<canvas id="canvas" width="400" height="500"></canvas>
-<canvas id="canvascopy" width="400" height="500"></canvas>
-<button id="clearcanvas"> Clear </button>
-<button id="exportcanvas"> Export </button>
+
+<div class="drawing-container">
+  <span class="prompt">Day Man, champion of the sun</span>
+  <canvas id="canvas" width="400" height="500"></canvas>
+  <div class="buttons">
+    <div class="clearbutton"  id="clearcanvas"> Clear </div>
+    <div class="submitbutton" id="exportcanvas"> Submit </div>
+  </div>
+  <div class="timer"></div>
+
+</div>

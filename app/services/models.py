@@ -30,3 +30,9 @@ class Player(db.Model):
             'guess':self.guess,
             'drawing':self.drawing
         }
+
+class Prompt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    text = db.Column(db.String(256))
+    def serialize(self):
+        return {'text':self.text}

@@ -33,9 +33,12 @@ function updateGame(room_code) {
   fetch(url).then(function(response) {
     response.json().then(function(data) {
       console.log(data)
+      addToHistory()
+      sessionStorage.setItem("page","drawing")
+      location.reload(true)
     })
   }).catch(function(err) {
-    console.log(err)
+    console.log("Update Game ERROR: " + err)
   });
 }
 function startGameButton(room_code) {
@@ -52,9 +55,7 @@ function startGameButton(room_code) {
           $('#host_info').append(button)
           $("#startButton").click(function() {
               updateGame(room_code)
-              addToHistory()
-              sessionStorage.setItem("page","drawing")
-              location.reload(true)
+
           });
         } else {
           span = document.createElement("span")

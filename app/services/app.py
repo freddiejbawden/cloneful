@@ -2,7 +2,7 @@ from init import db, app
 from flask import request,jsonify,render_template,abort,flash,Response
 from werkzeug.utils import secure_filename
 import random
-from models import Room,Player
+from models import Room, Player, Prompt
 import json
 import os
 
@@ -32,7 +32,15 @@ def generate_room_code():
         code += c
     return code
 
+def add_prompts_from_file():
+    filename = os.path.join("static","prompts","prompts.csv")
+    file = open(filename,"r")
+    for line in file:
+        new_prompt = Prompt(text=str(line))
+        db.session.add(new_prompt)
+    db.session.commit()
 
+add_prompts_from_file()
 
 @app.route("/")
 def display_webpage():
@@ -126,7 +134,7 @@ def change_gamestate(room_id):
     current_gamestate = target_room.gameState
     if current_gamestate == 0:
         current_gamestate = 1
-    Room.query.filter_by(id=room).update(dict(id=current_gamestate))
+    Room.query.filter_by(id=room).update(dict(gameState=current_gamestate))
     db.session.commit()
     return str(current_gamestate)
 
@@ -138,7 +146,7 @@ def allowed_files(filename):
     allowed_extension = filename.rsplit('.',1)[1].lower() == "jpg"
     return contains_extension and allowed_extension
 
-@app.route("/submitguess", methods=["PUT"])
+@app.route("/player/submitguess", methods=["PUT"])
 def submit_guess():
     room = request.json["room"]
     name = request.json["name"]
@@ -146,6 +154,11 @@ def submit_guess():
     Player.query.filter_by(id=room,name=name).update(dict(guess=guess))
     db.session.commit()
     return "Done"
+
+@app.route("/prompt/<string:room_id>", methods=["GET"])
+def get_all_prompts(room_id):
+    prompts = Room.query.filter_by(id=room_id).usedPrompts
+
 
 @app.route("/addscore",methods=["PUT"])
 def add_score():

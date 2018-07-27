@@ -71,13 +71,18 @@ $(document).ready(function() {
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           //finished request
+          console.log(xhttp.responseText)
         }
       }
       xhttp.open("PUT","http://127.0.0.1:5000/player/submitguess",true);
       xhttp.setRequestHeader("Content-Type","application/json");
       n = sessionStorage.getItem("name");
       room_id = sessionStorage.getItem("id");
-      xhttp.send(JSON.stringify({name:n,id:room_id,guess:j}));
+      xhttp.send(JSON.stringify({name:n,room:room_id,guess:j}));
     });
+
+    //get prompt
     
+
+
 });

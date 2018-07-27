@@ -28,7 +28,7 @@ $(document).ready(function() {
   });
 });
 function updateGame(room_code) {
-  url = "http://127.0.0.1:5000/gamecontroller/" + room_code
+  url = "http://127.0.0.1:5000/gamecontroller/" + room_code + "/change"
 
   fetch(url).then(function(response) {
     response.json().then(function(data) {

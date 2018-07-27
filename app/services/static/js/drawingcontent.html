@@ -43,6 +43,14 @@
       margin-bottom: 10pt;
       font-size: 20pt;
     }
+    .timer-container {
+      width: 40%;
+    }
+    .timer {
+      -webkit-transition: width 2s;
+      transition: width 1.1s;
+      transition-timing-function: linear;
+    }
 </style>
 
 <div class="drawing-container">
@@ -52,6 +60,7 @@
     <div class="clearbutton"  id="clearcanvas"> Clear </div>
     <div class="submitbutton" id="exportcanvas"> Submit </div>
   </div>
-  <div class="timer"></div>
-
+  <div class="timer-container">
+      <div id="timer" class="timer"></div>
+  </div>
 </div>

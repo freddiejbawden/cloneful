@@ -10,6 +10,7 @@ import sys
 import os
 
 # TODO: Unify bodies of PUT requests room_id should be same for every request
+# TODO: Unify URLs for room_id, have passed in url not body
 
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -186,7 +187,7 @@ def change_gamestate(room_id):
 """ Sets the drawing for player
     Takes body: room, name, guess """
 @app.route("/player/submitguess", methods=["PUT"])
-def submit_guess():
+def submit_drawing():
     room = request.json["room"]
     name = request.json["name"]
     guess = request.json["guess"]
@@ -195,6 +196,34 @@ def submit_guess():
     return request.json["guess"]
 
 """ Construction Zone """
+
+""" Return a picture and increment viewing or end flag """
+@app.route("/room/<string:room_id>/image",methods=["GET"])
+def get_next_image(room_id):
+    images = map(lambda x: x.drawing, Player.query.filter_by(id=room_id).all())
+    toReturn = Room.query.filter_by(id=room_id).first().viewing
+    if toReturn >= len(images):
+        return jsonify("End")
+    else:
+        Room.query.filter_by(id=room_id).first().update(dict(viewing=toReturn+1))
+        return jsonify(images[toReturn])
+
+@app.route("/player/<string:room_id>/guess",methods=["PUT"])
+def submit_guess(room_id):
+    name = request.json["name"]
+    guess = request.json["guess"]
+    Player.query.filter_by(id=room_id,name=name).update(dict(guess=guess))
+    db.session.commit()
+    return jsonify(guess)
+
+
+""" Get number of players who have not guessed """
+@app.route("/player/<string:room_id>/check_guesses",methods=["GET"])
+def get_num_guesses(room_id):
+    guesses = filter(lambda x: x.guess == u'', Player.query.filter_by(id=room_id).all())
+    if guesses == None:
+        return jsonify(0)
+    return jsonify(len(guesses))
 
 """ Returns prompt for player """
 @app.route("/prompt/<string:room_id>", methods=["GET"])

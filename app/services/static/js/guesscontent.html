@@ -1,34 +1,14 @@
-<style>
-  #picture_container {
-    width: 40%;
-  }
-  #canvas  {
-    border: 5px solid red;
-    background-color: white;
-    width: 400px;
-    height: 500px;
-  }
-  .guess_input {
-    width: 100%;
-    display: flex;
-    align-items:center;
-    margin: 10px
-  }
-  .guess_button {
-    background-color: green;
-    padding: 10pt;
-  }
-  .guess_input input {
-    height: 1.5em;
-    margin: 10px
-  }
-</style>
-<div id="picture_container">
-  <canvas id="canvas"></canvas>
-  <div class="guess_input">
-    <input />
-    <div class="guess_button">
-      Submit Guess
+<link rel="stylesheet" type="text/css" href="static/css/guesscontent.css" />
+<script src="static/js/guessing.js"></script>
+<div class="wrapper">
+  <div id="picture_container">
+    <span> What is this...um...masterpiece? </span>
+    <canvas id="canvas"></canvas>
+    <div class="guess_input">
+      <input />
+      <div class="guess_button">
+        Submit Guess
+      </div>
     </div>
   </div>
 </div>

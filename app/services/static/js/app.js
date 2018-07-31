@@ -109,6 +109,8 @@ $(document).ready(function() {
     $('#y').load("/static/js/drawingcontent.html")
   } else if (page == "guess") {
     $('#y').load("/static/js/guesscontent.html")
+  } else if (page == "choose") {
+    $('#y').load("/static/js/choosecontent.html")
   } else {
     $('#y').load("/static/js/indexcontent.html", function() {
       $("#creategame").click(function() {

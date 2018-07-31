@@ -1,8 +1,5 @@
 var c = {}
 
-
-
-
 $(document).ready(function() {
     context = document.getElementById('canvas').getContext("2d");
     var clickX = new Array();
@@ -112,6 +109,30 @@ $(document).ready(function() {
       })
     }
 
+    function get_prompt() {
+      room = sessionStorage.getItem("id")
+      name = sessionStorage.getItem("name")
+      url = "http://127.0.0.1:5000/player/" + room + "/prompt"
+      fetch(url,
+        {
+          headers : {
+            "Accept" : "application/json",
+            "Content-Type" : "application/json"
+          },
+          method: "PUT",
+          body: JSON.stringify({'name': name})
+        }
+      ).then(function(response) {
+        response.json().then(function(data) {
+          console.log(data)
+          $('#prompt_text').text(data)
+          start_timer()
+        })
+      }).catch(function(err) {
+        console.log(err)
+      })
+    }
+
     $('#canvas').mousedown(function(e) {
       console.log("mouse down")
       var mouseX = e.pageX - this.offsetLeft
@@ -167,6 +188,7 @@ $(document).ready(function() {
     $("#exportcanvas").click(function() {
       submitImage()
     });
-    start_timer()
+    get_prompt()
+
 
 });

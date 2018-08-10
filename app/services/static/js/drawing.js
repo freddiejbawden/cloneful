@@ -50,42 +50,24 @@ $(document).ready(function() {
       return JSON.stringify(z)
     }
 
-    function submitImage_end() {
+    function submit_drawing(end_flag) {
       j = to_json(clickX,clickY,clickDrag)
-      xhttp = new XMLHttpRequest()
-      xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          //finished request
-          // TODO: Add confirmation message
-          console.log("Submitted")
-          change_gamestate(room_id)
-        }
+      room_id = sessionStorage.getItem("id")
+      n = sessionStorage.getItem("name")
+      url = "http://127.0.0.1:5000/player/" + room_id + "/submitdrawing"
+      fetch(url,
+          {
+            method: "PUT",
+            body: JSON.stringify({name:n,drawing:j}),
+            headers : {
+              "Content-Type" : "application/json"
+            }
+        }).then(function(response) {
+            if (end_flag) {
+              change_gamestate(room_id)
+            }
+          });
       }
-      xhttp.open("PUT","http://127.0.0.1:5000/player/submitguess",true);
-      xhttp.setRequestHeader("Content-Type","application/json");
-      n = sessionStorage.getItem("name");
-      room_id = sessionStorage.getItem("id");
-      xhttp.send(JSON.stringify({name:n,room:room_id,guess:j}));
-    }
-
-    function submitImage() {
-      j = to_json(clickX,clickY,clickDrag)
-      console.log(JSON.parse(j))
-      xhttp = new XMLHttpRequest()
-      xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-          //finished request
-          // TODO: Add confirmation message
-          console.log("Submitted")
-        }
-      }
-      xhttp.open("PUT","http://127.0.0.1:5000/player/submitguess",true);
-      xhttp.setRequestHeader("Content-Type","application/json");
-      n = sessionStorage.getItem("name");
-      room_id = sessionStorage.getItem("id");
-      xhttp.send(JSON.stringify({name:n,room:room_id,guess:j}));
-    }
-
     function change_gamestate(room_code) {
       url = "http://127.0.0.1:5000/gamecontroller/" + room_code + "/change"
 
@@ -186,7 +168,7 @@ $(document).ready(function() {
       context.clearRect(0,0,context.canvas.width,context.canvas.height);
     })
     $("#exportcanvas").click(function() {
-      submitImage()
+      submit_drawing()
     });
     get_prompt()
 

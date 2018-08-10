@@ -109,6 +109,7 @@ $(document).ready(function() {
   $('#guess').click(function() {
     submit_guess()
   })
+  // check if the image served is the clients
 
   get_image()
 })

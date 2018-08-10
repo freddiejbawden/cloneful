@@ -191,15 +191,22 @@ def change_gamestate(room_id):
 
 """ Sets the drawing for player
     Takes body: room, name, guess """
-@app.route("/player/submitguess", methods=["PUT"])
-def submit_drawing():
-    room = request.json["room"]
+@app.route("/player/<string:room_id>/submitdrawing", methods=["PUT"])
+def submit_drawing(room_id):
+    room = str(room_id)
     name = request.json["name"]
-    guess = request.json["guess"]
-    Player.query.filter_by(id=room,name=name).update(dict(drawing=guess))
+    drawing = request.json["drawing"]
+    Player.query.filter_by(id=room,name=name).update(dict(drawing=drawing))
     db.session.commit()
-    return request.json["guess"]
+    return request.json["drawing"]
 
+
+""" Return the name of the owner of the current picture """
+@app.route("/room/<string:room_id>/imageowner", methods=["GET"])
+def get_image_owner(room_id):
+    viewing = Room.query.filter_by(id=room_id).first().viewing
+    players = map(lambda x: x.name, Player.query.filter_by(id=room_id).all())
+    return jsonify(players[viewing])
 
 """ Return a picture and increment viewing or end flag """
 @app.route("/room/<string:room_id>/image",methods=["GET"])
@@ -228,7 +235,7 @@ def submit_guess(room_id):
 @app.route("/player/<string:room_id>/check_guesses",methods=["GET"])
 def get_num_guesses(room_id):
     guesses = filter(lambda x: x.guess == u'', Player.query.filter_by(id=room_id).all())
-    if guesses == None:
+    if guesses == 1:
         return jsonify(0)
     return jsonify(len(guesses))
 

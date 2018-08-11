@@ -154,7 +154,7 @@ def check_everyone_submitted(room_id):
 def check_everyone_chosen(room_id):
     room = room_id
     choices = filter(lambda x: len(x.choice) == 0, Player.query.filter_by(id=room_id).all())
-    if choices == None:
+    if len(choices) == 1:
         return jsonify(0)
     return jsonify(len(choices))
 
@@ -235,7 +235,7 @@ def submit_guess(room_id):
 @app.route("/player/<string:room_id>/check_guesses",methods=["GET"])
 def get_num_guesses(room_id):
     guesses = filter(lambda x: x.guess == u'', Player.query.filter_by(id=room_id).all())
-    if guesses == 1:
+    if len(guesses) == 1:
         return jsonify(0)
     return jsonify(len(guesses))
 
@@ -249,7 +249,8 @@ def get_all_guesses(room_id):
      prompt = Player.query.filter_by(id=room).all()[viewing].prompt
      images = map(lambda x:x.drawing, Player.query.filter_by(id=room).all())
      all_guesses = map(lambda x: {'name':x.name, 'guess':x.guess}, Player.query.filter_by(id=room).all())
-     prompt_and_guesses = {'image':images[viewing], 'truth':prompt, 'guesses':all_guesses}
+     remove_empty = filter(lambda x: x["guess"] != u'', all_guesses)
+     prompt_and_guesses = {'image':images[viewing], 'truth':prompt, 'guesses':remove_empty}
      return jsonify(prompt_and_guesses)
 
 @app.route("/player/<string:room_id>/set_choice",methods=["PUT"])

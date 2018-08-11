@@ -63,7 +63,7 @@ function addToHistory() {
 }
 
 // TODO: move this somewhere more appropraite
-function check_owner() {
+function check_owner(page) {
   room_id = sessionStorage.getItem("id")
   if (room_id == "") {
     return ""
@@ -72,17 +72,28 @@ function check_owner() {
   fetch(url).then(function(response) {
     response.json().then(function(data) {
       stored_name = sessionStorage.getItem("name")
+      page = sessionStorage.getItem("page")
       is_owner = (stored_name != (data)) ? "load_image" : "wait"
-      console.log("wait")
+      console.log(is_owner)
       if (is_owner == "load_image") {
-        $('#y').load("./static/html/submitguesscontent.html")
+        // if you are the owner of the image
+        if (page == "guess") {
+          $('#y').load("./static/html/submitguesscontent.html")
+        } else {
+          $('#y').load("./static/html/choosecontent.html")
+        }
       } else {
-        $('#y').load("./static/html/waitforguesscontent.html")
+        // if you are not the owner of the image
+        if (page == "guess") {
+          $('#y').load("./static/html/waitforguesscontent.html")
+        } else {
+          $('#y').load("./static/html/waitforchoosecontent.html")
+        }
       }
     })
   })
-
 }
+
 
 $(document).ready(function() {
   // Loading in pages
@@ -129,9 +140,8 @@ $(document).ready(function() {
     $('#y').load("./static/html/drawingcontent.html")
   } else if (page == "guess") {
     is_owner =  check_owner()
-
   } else if (page == "choose") {
-    $('#y').load("./static/html/choosecontent.html")
+    is_owner =  check_owner()
   } else {
     $('#y').load("./static/html/indexcontent.html", function() {
       $("#creategame").click(function() {

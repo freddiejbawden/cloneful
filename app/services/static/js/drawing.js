@@ -1,5 +1,5 @@
 var c = {}
-
+// TODO: functionize host check or gamestatechange
 $(document).ready(function() {
     context = document.getElementById('canvas').getContext("2d");
     var clickX = new Array();
@@ -14,7 +14,12 @@ $(document).ready(function() {
         response.json().then(function(data) {
           console.log(data)
           if (data == "0") {
-            change_gamestate(room_id)
+            if (sessionStorage.getItem("host") == "true") {
+              change_gamestate(room_id)
+            } else {
+              sessionStorage.setItem("page","guess")
+              location.reload(true)
+            }
           } else {
             get_time(room)
           }
@@ -64,21 +69,24 @@ $(document).ready(function() {
             }
         }).then(function(response) {
             if (end_flag) {
-              change_gamestate(room_id)
+              if (sessionStorage.getItem("host") == "true") {
+                change_gamestate(room_id)
+              } else {
+                sessionStorage.setItem("page","guess")
+                location.reload(true)
+              }
             }
           });
       }
     function change_gamestate(room_code) {
-      url = "http://127.0.0.1:5000/gamecontroller/" + room_code + "/change"
 
-      fetch(url).then(function(response) {
-        response.json().then(function(data) {
+        url = "http://127.0.0.1:5000/gamecontroller/" + room_code + "/change"
+        fetch(url).then(function(response) {
           sessionStorage.setItem("page","guess")
           location.reload(true)
-        })
-      }).catch(function(err) {
-        console.log("Update Game ERROR: " + err)
-      });
+        }).catch(function(err) {
+          console.log("Update Game ERROR: " + err)
+        });
     }
 
     function start_timer() {

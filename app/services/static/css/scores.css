@@ -1,0 +1,12 @@
+.score-container {
+  display: flex;
+}
+.score-card {
+  display: flex;
+  flex-direction: row;
+}
+.continue {
+  padding: 1.5em;
+  background-color: orange;
+  font-size: 20pt;
+}

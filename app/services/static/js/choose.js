@@ -40,7 +40,13 @@ $(document).ready(function() {
     fetch(url).then(function(response) {
       response.json().then(function(data) {
         if (data == "0") {
-          change_gamestate()
+          if (sessionStorage.getItem("host") == "true") {
+            change_gamestate(room)
+          } else {
+            sessionStorage.setItem("page","score")
+            location.reload(true)
+          }
+
         }
       })
     })

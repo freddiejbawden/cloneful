@@ -1,3 +1,5 @@
+// TODO: Create URL config
+
 
 function create_game() {
   input_name = document.getElementById("name").value
@@ -13,6 +15,7 @@ function create_game() {
     response.json().then(function(data) {
       sessionStorage.setItem("id", data["id"]);
       sessionStorage.setItem("page","waiting_room")
+      sessionStorage.setItem("host","true")
       location.reload(true)
     })
   })
@@ -61,7 +64,9 @@ function addToHistory() {
     sessionStorage.setItem("h",JSON.stringify(pages))
   }
 }
+function check_host() {
 
+}
 // TODO: move this somewhere more appropraite
 function check_owner(page) {
   room_id = sessionStorage.getItem("id")
@@ -142,7 +147,12 @@ $(document).ready(function() {
     is_owner =  check_owner()
   } else if (page == "choose") {
     is_owner =  check_owner()
-  } else {
+  } else if (page == "score") {
+    $("#y").load("./static/html/scorecontent.html");
+
+  }
+
+   else {
     $('#y').load("./static/html/indexcontent.html", function() {
       $("#creategame").click(function() {
         addToHistory()

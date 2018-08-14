@@ -94,7 +94,12 @@ $(document).ready(function() {
         console.log(data)
         if (data == "0") {
           // everyone has guessed, time to display answers and scores
-          change_gamestate(room_id)
+          if (sessionStorage.getItem("host") == "true") {
+            change_gamestate(room_id)
+          } else {
+            sessionStorage.setItem("page","choose")
+            location.reload(true)
+          }
 
         } else {
           // cycle clock

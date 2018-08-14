@@ -12,6 +12,7 @@ class Room(db.Model):
     start_time = db.Column(db.Integer,default=0)
     viewing = db.Column(db.Integer,default=0)
     usedPrompts = db.Column(db.Text,default="")
+    scoresUpdated = db.Column(db.Integer,default=0)
     def serialize(self):
         return {
             'id':self.id,

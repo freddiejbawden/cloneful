@@ -12,6 +12,7 @@ import os
 
 # TODO: Unify bodies of PUT requests room_id should be same for every request
 # TODO: Unify URLs for room_id, have passed in url not body
+# TODO: Create funciton for getting prompt for the current round
 
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
@@ -185,6 +186,7 @@ def change_gamestate(room_id):
     target_room = Room.query.get_or_404(room)
     current_gamestate = target_room.gameState
     current_gamestate += 1
+    print (current_gamestate, file=sys.stderr)
     Room.query.filter_by(id=room).update(dict(gameState=current_gamestate))
     db.session.commit()
     return str(current_gamestate)
@@ -216,14 +218,12 @@ def get_next_image(room_id):
     if toReturn >= len(images):
         return jsonify("End")
     else:
-        Room.query.filter_by(id=room_id).update(dict(viewing=toReturn+1))
         return jsonify(images[toReturn])
 
 """ Set the guess for player
     Takes body: name, guess """
 @app.route("/player/<string:room_id>/guess",methods=["PUT"])
 def submit_guess(room_id):
-    print (request.json, file=sys.stderr)
     name = request.json["name"]
     guess = request.json["guess"]
     Player.query.filter_by(id=room_id,name=name).update(dict(guess=guess))
@@ -236,11 +236,45 @@ def submit_guess(room_id):
 def get_num_guesses(room_id):
     guesses = filter(lambda x: x.guess == u'', Player.query.filter_by(id=room_id).all())
     if len(guesses) == 1:
+        # everyone has guessed
         return jsonify(0)
     return jsonify(len(guesses))
 
-""" Construction Zone """
+def add_score_to_players(owner,guesser,room_id):
+    print (owner,guesser,room_id,file=sys.stderr)
+    owner_score = int(Player.query.filter_by(id=room_id,name=owner).first().score)
+    guesser_score = int(Player.query.filter_by(id=room_id,name=guesser).first().score)
+    print ("here", file=sys.stderr)
+    Player.query.filter_by(id=room_id,name=owner).update(dict(score=(owner_score+100)))
+    Player.query.filter_by(id=room_id,name=guesser).update(dict(score=guesser_score+100))
 
+""" Eval round and update scores """
+# TODO: Fix function so extreme case are accounted for ie. player picking their own
+@app.route("/room/<string:room_id>/finishRound")
+def finish_round(room_id):
+    room = str(room_id)
+    viewing = Room.query.filter_by(id=room).first().viewing
+    prompt =  Player.query.filter_by(id=room).all()[viewing].prompt
+    owner = Player.query.filter_by(id=room,guess=u'').first()
+
+    for player in Player.query.filter(Player.id == room,Player.guess != u'').all():
+        if player.choice == prompt:
+            add_score_to_players(owner.name,player.name,room)
+        else:
+            # guessed someone elses
+            lier = Player.query.filter_by(id=room_id,guess=player.choice).first()
+            lier_score = int(lier.score)
+            Player.query.filter_by(id=room,name=lier.name).update(dict(score=lier_score + 100))
+    Room.query.filter_by(id=room_id).update(dict(scoresUpdated=1))
+    db.session.commit()
+    scores = Player.query.filter_by(id=room).order_by(Player.score).all()
+    return jsonify(map(lambda x: x.serialize(), scores))
+
+""" Check if round has been evalulated """
+@app.route("/room/<string:room_id>/check_scored")
+def check_scored(room_id):
+    room = str(room_id)
+    return jsonify(Room.query.filter_by(id=room).first().scoresUpdated)
 """ Gets all guesses """
 @app.route("/player/<string:room_id>/all_guesses", methods=["GET"])
 def get_all_guesses(room_id):
@@ -270,18 +304,38 @@ def get_all_prompts(room_id):
     num_of_prompts = Prompt.query.count()
     rand_id = random.randint(0,num_of_prompts)
     prompt = Prompt.query.filter_by(id=rand_id).first().text
-    print (num_of_prompts, file=sys.stderr)
     Player.query.filter_by(id=room_id,name=name).update(dict(prompt=prompt))
     db.session.commit()
     return jsonify(prompt)
 
-""" Adds score """
-@app.route("/addscore",methods=["PUT"])
-def add_score():
-    room = request.json["room"]
-    name = request.json["name"]
-    score = request.json["score"]
-    target_player_score = Player.query.filter_by(id=room,name=name).score+score
-    Player.query.filter_by(id=room,name=name).update(dict(score=target_player_score))
+
+""" Retunrs ordered the scoreboard """
+@app.route("/room/<string:room_id>/scores", methods=["GET"])
+def get_scores(room_id):
+    room = str(room_id)
+    scores = Player.query.filter_by(id=room).order_by(Player.score).all()
+    return jsonify(map(lambda x: x.serialize(), scores))
+
+""" Construction Zone """
+""" Resets gamestate to guessing if another round can happen else end """
+@app.route("/gamecontroller/<string:room_id>/next")
+def get_next_stage(room_id):
+    images = map(lambda x: x.drawing, Player.query.filter_by(id=room_id).all())
+    images_viewed = Room.query.filter_by(id=room_id).first().viewing
+    if images_viewed >= len(images):
+        Room.query.filter_by(id=room_id).update(dict(gameState=6))
+        db.session.commit()
+        return jsonify("End")
+    else:
+        Room.query.filter_by(id=room_id).update(dict(gameState=2,scoresUpdated=0,viewing=images_viewed+1))
+        Player.query.filter_by(id=room_id).update(dict(choice=u'',guess=u''))
+        db.session.commit()
+        return jsonify(2)
+
+""" Get gamestate """
+@app.route("/gamecontroller/<string:room_id>/state")
+def get_state(room_id):
+    state = Room.query.filter_by(id=room_id).first().gameState
+    return jsonify(state)
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,threaded=True)

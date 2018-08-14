@@ -3,6 +3,10 @@ $(document).ready(function() {
   console.log(room_code)
   room_code_header = document.getElementById("room")
   room_code_header.innerHTML = "Room Code: " + room_code
+  var intervalId = window.setInterval(checkforchange,2000);
+  display_player_names()
+});
+function display_player_names() {
   url = "http://127.0.0.1:5000/player/" + room_code
   fetch(url).then(function(response) {
       console.log(response.status);
@@ -26,7 +30,8 @@ $(document).ready(function() {
   ).catch(function(err) {
     console.log(err);
   });
-});
+}
+
 function updateGame(room_code) {
   url = "http://127.0.0.1:5000/gamecontroller/" + room_code + "/change"
 
@@ -125,5 +130,3 @@ function checkforstart(room_code) {
 
 
 }
-
-var intervalId = window.setInterval(checkforchange,2000);

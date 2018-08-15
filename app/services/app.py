@@ -81,6 +81,7 @@ def create_room():
     db.session.commit()
     return jsonify(new_room.serialize())
 
+
 """ Return list of all players """
 @app.route("/player",methods=["GET"])
 def get_player():
@@ -91,7 +92,6 @@ def get_player():
 def get_all_player_in_room(room_id):
     players = Player.query.filter_by(id=room_id).all()
     return jsonify(map(lambda x:x.serialize(),players))
-
 
 """ Adds a new player
     Takes body: name, room """
@@ -143,6 +143,11 @@ def add_player_to_room(room_id):
     db.session.commit()
     return str(add_one_player)
 
+@app.route("/player/<string:room_id>/<string:name>/prompt", methods=["GET"])
+def get_prompt(room_id,name):
+    prompt = Player.query.filter_by(id=room_id,name=name).first().prompt
+    return jsonify(prompt)
+
 """ Returns number of players who have submitted an image """
 @app.route("/room/<string:room_id>/check_subs",methods=["GET"])
 def check_everyone_submitted(room_id):
@@ -179,13 +184,26 @@ def start_time(room_id):
     return jsonify(cur_time)
 
 
+def add_prompts(room_id):
+    players = Player.query.filter_by(id=room_id).all()
+    num_players = len(players)
+    all_prompts = map(lambda x:  x.text, Prompt.query.all())
+    random.shuffle(all_prompts)
+    sliced_prompts = all_prompts[:num_players]
+    for i,p in enumerate(players):
+        Player.query.filter_by(id=room_id,name=p.name).update(dict(prompt=sliced_prompts[i]))
+    db.session.commit()
+
 """ Changes the game state to signal clients to change mode """
 @app.route("/gamecontroller/<string:room_id>/change",methods=["GET"])
 def change_gamestate(room_id):
     room = str(room_id)
     target_room = Room.query.get_or_404(room)
     current_gamestate = target_room.gameState
+
     current_gamestate += 1
+    if current_gamestate == 1:
+        add_prompts(room)
     print (current_gamestate, file=sys.stderr)
     Room.query.filter_by(id=room).update(dict(gameState=current_gamestate))
     db.session.commit()
@@ -266,9 +284,15 @@ def finish_round(room_id):
             lier_score = int(lier.score)
             Player.query.filter_by(id=room,name=lier.name).update(dict(score=lier_score + 100))
     Room.query.filter_by(id=room_id).update(dict(scoresUpdated=1))
+
+    num_images = len(Player.query.filter_by(id=room).all())
+    end_flag = 0
+    if (viewing >= num_images-1):
+        Room.query.filter_by(id=room_id).update(dict(gameState=6))
+        db.session.commit()
+        end_flag = 1
     db.session.commit()
-    scores = Player.query.filter_by(id=room).order_by(Player.score).all()
-    return jsonify(map(lambda x: x.serialize(), scores))
+    return jsonify(end_flag)
 
 """ Check if round has been evalulated """
 @app.route("/room/<string:room_id>/check_scored")
@@ -292,21 +316,20 @@ def set_player_choice(room_id):
     room = str(room_id)
     choice = request.json["choice"]
     player = request.json["name"]
-    new_player = Player.query.filter_by(id=room_id,name=player).update(dict(choice=choice))
+    updated = Player.query.filter_by(id=room_id,name=player).update(dict(choice=choice))
+
+    viewing = Room.query.filter_by(id=room).first().viewing
+    prompt =  Player.query.filter_by(id=room).all()[viewing].prompt
+    if (choice == prompt):
+        owner = Player.query.filter_by(id=room,guess=u'').first().name
+        add_score_to_players(owner,player,room)
+    else:
+        lier = Player.query.filter_by(id=room_id,guess=player.choice).first()
+        lier_score = int(lier.score)
+        Player.query.filter_by(id=room,name=lier.name).update(dict(score=lier_score + 100))
     db.session.commit()
     return jsonify(new_player)
 
-# TODO: Make sure two people in a room cannot get the same prompt
-""" Returns prompt for player """
-@app.route("/player/<string:room_id>/prompt", methods=["PUT"])
-def get_all_prompts(room_id):
-    name = request.json["name"]
-    num_of_prompts = Prompt.query.count()
-    rand_id = random.randint(0,num_of_prompts)
-    prompt = Prompt.query.filter_by(id=rand_id).first().text
-    Player.query.filter_by(id=room_id,name=name).update(dict(prompt=prompt))
-    db.session.commit()
-    return jsonify(prompt)
 
 
 """ Retunrs ordered the scoreboard """
@@ -322,15 +345,10 @@ def get_scores(room_id):
 def get_next_stage(room_id):
     images = map(lambda x: x.drawing, Player.query.filter_by(id=room_id).all())
     images_viewed = Room.query.filter_by(id=room_id).first().viewing
-    if images_viewed >= len(images):
-        Room.query.filter_by(id=room_id).update(dict(gameState=6))
-        db.session.commit()
-        return jsonify("End")
-    else:
-        Room.query.filter_by(id=room_id).update(dict(gameState=2,scoresUpdated=0,viewing=images_viewed+1))
-        Player.query.filter_by(id=room_id).update(dict(choice=u'',guess=u''))
-        db.session.commit()
-        return jsonify(2)
+    Room.query.filter_by(id=room_id).update(dict(gameState=2,scoresUpdated=0,viewing=images_viewed+1))
+    Player.query.filter_by(id=room_id).update(dict(choice=u'',guess=u''))
+    db.session.commit()
+    return jsonify(2)
 
 """ Get gamestate """
 @app.route("/gamecontroller/<string:room_id>/state")

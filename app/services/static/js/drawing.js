@@ -100,29 +100,19 @@ $(document).ready(function() {
     }
 
     function get_prompt() {
-      room = sessionStorage.getItem("id")
+      room_id = sessionStorage.getItem("id")
       name = sessionStorage.getItem("name")
-      url = "http://127.0.0.1:5000/player/" + room + "/prompt"
-      fetch(url,
-        {
-          headers : {
-            "Accept" : "application/json",
-            "Content-Type" : "application/json"
-          },
-          method: "PUT",
-          body: JSON.stringify({'name': name})
-        }
-      ).then(function(response) {
+      url = "http://127.0.0.1:5000/player/" + room_id + "/" + name + "/prompt"
+      fetch(url).then(function(response) {
         response.json().then(function(data) {
-          console.log(data)
           $('#prompt_text').text(data)
           start_timer()
         })
       }).catch(function(err) {
         console.log(err)
       })
-    }
 
+    }
     $('#canvas').mousedown(function(e) {
       console.log("mouse down")
       var mouseX = e.pageX - this.offsetLeft

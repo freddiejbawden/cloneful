@@ -91,7 +91,7 @@ def get_player():
 @app.route("/player/<string:room_id>",methods=["GET"])
 def get_all_player_in_room(room_id):
     players = Player.query.filter_by(id=room_id).all()
-    return jsonify(map(lambda x:x.serialize(),players))
+    return jsonify(map((lambda x: x.serialize()),players))
 
 """ Adds a new player
     Takes body: name, room """
@@ -262,7 +262,6 @@ def add_score_to_players(owner,guesser,room_id):
     print (owner,guesser,room_id,file=sys.stderr)
     owner_score = int(Player.query.filter_by(id=room_id,name=owner).first().score)
     guesser_score = int(Player.query.filter_by(id=room_id,name=guesser).first().score)
-    print ("here", file=sys.stderr)
     Player.query.filter_by(id=room_id,name=owner).update(dict(score=(owner_score+100)))
     Player.query.filter_by(id=room_id,name=guesser).update(dict(score=guesser_score+100))
 

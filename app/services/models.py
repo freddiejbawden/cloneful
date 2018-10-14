@@ -1,5 +1,4 @@
 #app/models.py
-
 from init import db
 from sqlalchemy.dialects.postgresql import JSON
 

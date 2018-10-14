@@ -13,6 +13,7 @@ import os
 # TODO: Unify bodies of PUT requests room_id should be same for every request
 # TODO: Unify URLs for room_id, have passed in url not body
 # TODO: Create funciton for getting prompt for the current round
+# TODO: Beautify the UI!
 
 def add_cors_headers(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
